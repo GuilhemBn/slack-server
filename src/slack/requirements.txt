@@ -1,0 +1,3 @@
+beautifulsoup4==4.6.0
+git+https://github.com/GuilhemBn/python-wikiquotes.git@master#egg=wikiquote
+unidecode==0.04.21
