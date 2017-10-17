@@ -1,5 +1,6 @@
 <?php
-    if (isset($_POST['token']) && $_POST['token'] == "YOUR_TOKEN_HERE")
+    define('APP_TOKEN_FILE_NAME', __DIR__ . "/app_token.txt");
+    if (isset($_POST['token']) && $_POST['token'] == trim(fgets(fopen(APP_TOKEN_FILE_NAME, 'r'))))
     {
 
 	list($character, $quote) = explode("\"", $_POST['text']);
@@ -31,6 +32,7 @@
 	$locale = 'fr_FR.UTF-8'; setlocale(LC_ALL, $locale); putenv('LC_ALL='.$locale);
 	
 	$return = exec($cmd);
+//	error_log(">>>>>>>>".$return);
         if ($return != 0){
 		
        		$response = array(
@@ -42,6 +44,7 @@
 			"response_type"=> "in_channel",
 			"text"=> $echo_cmd);
 	}
+        //echo "python3 /home/guilhem/kaamelott_quotes_to_robot_slack.py " . $_POST['channel'];
         header('Content-Type: application/json');
         $ch = curl_init( $_POST['response_url'] );
 	curl_setopt( $ch, CURLOPT_POST, 1);
@@ -55,6 +58,7 @@
     }
     else
     {
-        echo "Application token not valid.";
+	$test = explode("\"", "test");
+        echo "Post not received.".$test[0];
     }
 ?>

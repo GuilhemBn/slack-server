@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-$TOKEN = 'YOUR_TOKEN_HERE';
+define('APP_TOKEN_FILE', __DIR__ . '/app_token.txt');
 define('APPLICATION_NAME', 'Slack Reunion App');
 define('CREDENTIALS_PATH', __DIR__ . '/.credentials/drive-php-quickstart.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
@@ -10,7 +10,7 @@ define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 define('SCOPES', implode(' ', array(
   Google_Service_Drive::DRIVE)
 ));
-define('REUNION_FOLDER_ID', 'ROOT_FOLDER_OF_FILES');
+define('REUNION_FOLDER_ID', '0Byvdd_WKBNh3aWYtbUdCcXNWbTQ');
 define('REUNION_WEEK_DAY', 'tuesday');
 
 
@@ -57,7 +57,7 @@ function getClient() {
 }
 
 
-if (isset($_POST['token']) && $_POST['token'] == $TOKEN){
+if (isset($_POST['token']) && $_POST['token'] == trim(fgets(fopen(APP_TOKEN_FILE, 'r')))){
 	// Get the API client and construct the service object
   $new_text = $_POST['text'];
   //$new_text = "plop";
@@ -86,9 +86,9 @@ if (isset($_POST['token']) && $_POST['token'] == $TOKEN){
   $response=NULL; 
   if (trim($new_text) != ''){
     $download_response = $service->files->export($searched_file_id, 'text/html', array('alt' => 'media'));
-    file_put_contents("tmp.html", $download_response->getBody()->getContents());
-    exec("python3 /var/www/slack/slack/add_text_html_file.py -f 'tmp.html' -t '".$new_text."'");
-    $content = file_get_contents("tmp.html");
+    file_put_contents("resources/tmp.html", $download_response->getBody()->getContents());
+    exec("python3 /var/www/slack/slack/add_text_html_file.py -f 'resources/tmp.html' -t '".$new_text."'");
+    $content = file_get_contents("resources/tmp.html");
     $drive_file = new Google_Service_Drive_DriveFile(array('name' => $filename, 'mimeType' => 'application/vnd.google-apps.document', ));
     $updated_file = $service->files->update($searched_file_id, $drive_file, array('data' => $content, 'mimeType' => 'text/html'));
     $response = array(
@@ -104,3 +104,17 @@ if (isset($_POST['token']) && $_POST['token'] == $TOKEN){
   header('Content-Type: application/json; charset=utf-8');
   echo json_encode($response);
 }
+
+
+
+/*
+$fileId = "17bH4epl_NBnEKYHQYvTENY0YA1NdYH-8HB2NGfNinMI";
+$response = $service->files->export($fileId, 'text/plain', array('alt' => 'media'));
+printf("%s", $response->getBody()->getContents());
+$fileMetadata = new Google_Service_Drive_DriveFile(array('name' => 'test', 'mimeType' => 'application/vnd.google-apps.document', 'parents' => array('0B3TOHzAm3I1SODVhZGUyMTctZjI2NS00OTFlLWFmMDEtN2YyMTNiYmZiMWJh')));
+
+$content = file_get_contents('upload.txt');
+$file = $service->files->create($fileMetadata, array('data' => $content, 'mimeType' => 'text/plain', 'uploadType' => 'multipart', 'fields' => 'id'));
+printf("File ID: %s\n", $file->id);
+ */
+
